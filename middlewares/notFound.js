@@ -1,4 +1,4 @@
-// Middleware per rotte inesistenti
+// Rotta root: utile per testare se il backend è 
 
 // Middleware per rotte inesistenti
 

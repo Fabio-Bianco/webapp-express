@@ -21,6 +21,12 @@ app.use(cors({
 app.use(express.json()); // Permette parsing di JSON nel corpo delle richieste
 app.use('/images', express.static('public/images')); // Serve immagini statiche
 
+// ✅ Rotta per la homepage ("/") del backend
+app.get('/', (req, res) => {
+  res.send(`
+    <h1>🎬 Benvenuto nella Movie API</h1>`);
+});
+
 // ✅ Rotte API
 app.use('/movies', moviesRouter);
 

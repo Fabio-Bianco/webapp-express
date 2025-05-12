@@ -8,11 +8,11 @@ export const getAllMovies = async (req, res, next) => {
     console.log('📥 Richiesta GET /movies ricevuta');
 
     const [rows] = await db.query(`
-      SELECT movies.*, AVG(reviews.rating) AS average_rating
-      FROM movies
-      LEFT JOIN reviews ON reviews.movie_id = movies.id
-      GROUP BY movies.id
-    `);
+  SELECT movies.*, AVG(reviews.vote) AS average_rating
+  FROM movies
+  LEFT JOIN reviews ON reviews.movie_id = movies.id
+  GROUP BY movies.id
+`);
 
     console.log('📦 Film trovati:', rows.length);
     res.json(rows);

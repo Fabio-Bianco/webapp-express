@@ -8,21 +8,29 @@ import { notFound } from './middlewares/notFound.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 
 const app = express();
-const port = 4000; // ✅ Fissa la porta
+const port = 4000; // ✅ Porta fissa per il server backend
 
-// Middleware globali
-app.use(cors());                              // ✅ Permette chiamate da React
-app.use(express.json());                      // ✅ Supporto per JSON
-app.use('/images', express.static('public/images')); // ✅ Static per immagini (bonus)
+// ✅ Configurazione CORS: consente solo al frontend React su porta 5173 di accedere alle API
+app.use(cors({
+  origin: 'http://localhost:5173',   // 🔐 Solo questo dominio può accedere
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Facoltativo: limiti ai metodi
+  credentials: false                 // Cambia a true solo se usi cookie o sessioni
+}));
 
-// API Routes
+// ✅ Middleware globali
+app.use(express.json()); // Permette parsing di JSON nel corpo delle richieste
+app.use('/images', express.static('public/images')); // Serve immagini statiche
+
+// ✅ Rotte API
 app.use('/movies', moviesRouter);
 
-// Middleware finale: 404 e gestione errori
+// ✅ Middleware per gestire rotte non esistenti
 app.use(notFound);
+
+// ✅ Middleware per errori generici
 app.use(errorHandler);
 
-// Avvio server sulla porta 4000
+// ✅ Avvio del server sulla porta 4000
 app.listen(port, () => {
   console.log(`🚀 Server attivo su http://localhost:${port}`);
 });

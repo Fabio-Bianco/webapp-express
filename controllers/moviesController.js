@@ -1,52 +1,55 @@
-// Controller per le operazioni legate ai film
+import { db } from "../db/index.js";
 
-import { db } from '../db/index.js';
-
-// Ritorna la lista di tutti i film con la media delle recensioni
+// GET /movies
 export const getAllMovies = async (req, res, next) => {
   try {
-    console.log('📥 Richiesta GET /movies ricevuta');
-
     const [rows] = await db.query(`
-  SELECT movies.*, AVG(reviews.vote) AS average_rating
-  FROM movies
-  LEFT JOIN reviews ON reviews.movie_id = movies.id
-  GROUP BY movies.id
-`);
+      SELECT movies.*, AVG(reviews.vote) AS average_vote
+      FROM movies
+      LEFT JOIN reviews ON reviews.movie_id = movies.id
+      GROUP BY movies.id
+    `);
 
-    console.log('📦 Film trovati:', rows.length);
-    res.json(rows);
+    const moviesWithImagePath = rows.map((movie) => ({
+      ...movie,
+      imagePath: "/images/movies/" + movie.image,
+    }));
+
+    res.json(moviesWithImagePath);
   } catch (error) {
-    console.error('❌ Errore nella query getAllMovies:', error);
+    console.error("Errore getAllMovies:", error);
     next(error);
   }
 };
 
-// Ritorna i dettagli di un singolo film e le sue recensioni
+// GET /movies/:id
 export const getMovieById = async (req, res, next) => {
   try {
     const movieId = req.params.id;
-    console.log(`📥 Richiesta GET /movies/${movieId} ricevuta`);
 
     const [movieRows] = await db.query(
-      'SELECT * FROM movies WHERE id = ?',
+      "SELECT * FROM movies WHERE id = ?",
       [movieId]
     );
 
     if (movieRows.length === 0) {
-      console.warn(`⚠️ Nessun film trovato con ID: ${movieId}`);
-      return res.status(404).json({ error: 'Movie not found' });
+      return res.status(404).json({ error: "Movie not found" });
     }
 
     const [reviewRows] = await db.query(
-      'SELECT * FROM reviews WHERE movie_id = ?',
+      "SELECT * FROM reviews WHERE movie_id = ?",
       [movieId]
     );
 
-    console.log(`📦 Film ID ${movieId} trovato con ${reviewRows.length} recensioni`);
-    res.json({ ...movieRows[0], reviews: reviewRows });
+    const movie = {
+      ...movieRows[0],
+      imagePath: "/images/movies/" + movieRows[0].image,
+      reviews: reviewRows,
+    };
+
+    res.json(movie);
   } catch (error) {
-    console.error('❌ Errore nella query getMovieById:', error);
+    console.error("Errore getMovieById:", error);
     next(error);
   }
 };

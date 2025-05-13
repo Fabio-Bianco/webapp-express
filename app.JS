@@ -1,42 +1,36 @@
-// Entry point dell'app Express
-
 import express from 'express';
 import cors from 'cors';
-
 import moviesRouter from './routes/moviesRouter.js';
 import { notFound } from './middlewares/notFound.js';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { db } from './db/index.js';
 
 const app = express();
-const port = 4000; // ✅ Porta fissa per il server backend
+const port = 4000;
 
-// ✅ Configurazione CORS: consente solo al frontend React su porta 5173 di accedere alle API
-app.use(cors({
-  origin: 'http://localhost:5173',   // 🔐 Solo questo dominio può accedere
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Facoltativo: limiti ai metodi
-  credentials: false                 // Cambia a true solo se usi cookie o sessioni
-}));
+app.use(cors({ origin: true }));
+app.use(express.json());
+app.use('/images', express.static('public/images'));
 
-// ✅ Middleware globali
-app.use(express.json()); // Permette parsing di JSON nel corpo delle richieste
-app.use('/images', express.static('public/images')); // Serve immagini statiche
-
-// ✅ Rotta per la homepage ("/") del backend
 app.get('/', (req, res) => {
-  res.send(`
-    <h1>🎬 Benvenuto nella Movie API</h1>`);
+  res.send('🎬 API attiva');
 });
 
-// ✅ Rotte API
 app.use('/movies', moviesRouter);
-
-// ✅ Middleware per gestire rotte non esistenti
 app.use(notFound);
-
-// ✅ Middleware per errori generici
 app.use(errorHandler);
 
-// ✅ Avvio del server sulla porta 4000
-app.listen(port, () => {
-  console.log(`🚀 Server attivo su http://localhost:${port}`);
-});
+const startServer = async () => {
+  try {
+    await db.query('SELECT 1');
+    console.log('✅ Connessione DB riuscita');
+    app.listen(port, () => {
+      console.log(`🚀 Server attivo su http://localhost:${port}`);
+    });
+  } catch (err) {
+    console.error('❌ Errore connessione DB:', err.message);
+    process.exit(1);
+  }
+};
+
+startServer();

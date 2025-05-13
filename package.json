@@ -6,10 +6,11 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch app.js"
+    "dev": "node --env-file=.env --watch app.js",
+    "prod": "node --env-file=.env --watch app.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Fabio-Bianco",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",

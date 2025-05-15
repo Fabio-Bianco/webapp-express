@@ -1,55 +1,87 @@
 import { db } from "../db/index.js";
 
 // GET /movies
-export const getAllMovies = async (req, res, next) => {
+export const index = async (req, res, next) => {
   try {
-    const [rows] = await db.query(`
-      SELECT movies.*, AVG(reviews.vote) AS average_vote
-      FROM movies
-      LEFT JOIN reviews ON reviews.movie_id = movies.id
-      GROUP BY movies.id
-    `);
+    const [movies] = await db.query(`
+  SELECT movies.*, AVG(reviews.vote) AS average_vote
+  FROM movies
+  LEFT JOIN reviews ON reviews.movie_id = movies.id
+  GROUP BY movies.id
+  ORDER BY movies.release_year DESC
+  LIMIT 5
+`);
 
-    const moviesWithImagePath = rows.map((movie) => ({
+    const moviesWithImagePath = movies.map((movie) => ({
       ...movie,
-      imagePath: "/images/movies/" + movie.image,
+      imagePath: `/images/movies/${movie.image}`,
     }));
 
     res.json(moviesWithImagePath);
   } catch (error) {
-    console.error("Errore getAllMovies:", error);
+    console.error("Errore in index (GET /movies):", error);
     next(error);
   }
 };
 
 // GET /movies/:id
-export const getMovieById = async (req, res, next) => {
+export const show = async (req, res, next) => {
   try {
     const movieId = req.params.id;
 
-    const [movieRows] = await db.query(
-      "SELECT * FROM movies WHERE id = ?",
+    const [movieResults] = await db.query(
+      `SELECT * FROM movies WHERE id = ?`,
       [movieId]
     );
 
-    if (movieRows.length === 0) {
+    if (movieResults.length === 0) {
       return res.status(404).json({ error: "Movie not found" });
     }
 
-    const [reviewRows] = await db.query(
-      "SELECT * FROM reviews WHERE movie_id = ?",
+    const [reviewResults] = await db.query(
+      `SELECT * FROM reviews WHERE movie_id = ?`,
       [movieId]
     );
 
     const movie = {
-      ...movieRows[0],
-      imagePath: "/images/movies/" + movieRows[0].image,
-      reviews: reviewRows,
+      ...movieResults[0],
+      imagePath: `/images/movies/${movieResults[0].image}`,
+      reviews: reviewResults,
     };
 
     res.json(movie);
   } catch (error) {
-    console.error("Errore getMovieById:", error);
+    console.error("Errore in show (GET /movies/:id):", error);
     next(error);
   }
 };
+
+// CONTROLLER: GET /movies/featured
+export const featured = async (req, res, next) => {
+  try {
+    
+const [movies] = await db.query(`
+  SELECT movies.*, AVG(reviews.vote) AS average_vote
+  FROM movies
+  LEFT JOIN reviews ON reviews.movie_id = movies.id
+  GROUP BY movies.id
+  ORDER BY movies.release_year DESC
+  LIMIT 5
+`);
+
+   
+
+
+    const moviesWithImagePath = movies.map((movie) => ({
+      ...movie,
+      imagePath: `/images/movies/${movie.image}`,
+    }));
+
+    res.json(moviesWithImagePath);
+  } catch (error) {
+    console.error("Errore in featured (GET /movies/featured):", error);
+    next(error);
+  }
+};
+
+

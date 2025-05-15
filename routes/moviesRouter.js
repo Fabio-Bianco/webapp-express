@@ -1,5 +1,7 @@
+// routes/moviesRouter.js
 import express from "express";
-import { index, show, featured } from "../controllers/moviesController.js";
+import { index, show, featured, createMovie } from "../controllers/moviesController.js";
+import upload from "../middlewares/upload.js";
 import { db } from "../db/index.js";
 
 const router = express.Router();
@@ -18,23 +20,17 @@ router.post("/:id/reviews", async (req, res) => {
   const movieId = req.params.id;
   const { name, vote, text } = req.body;
 
-  // Validazione base dei dati
   if (!name || typeof vote !== "number" || vote < 1 || vote > 5) {
     return res.status(400).json({ error: "Dati recensione non validi" });
   }
 
   try {
-    // ✅ Verifica che il film esista
-    const [check] = await db.query(
-      `SELECT id FROM movies WHERE id = ?`,
-      [movieId]
-    );
+    const [check] = await db.query(`SELECT id FROM movies WHERE id = ?`, [movieId]);
 
     if (check.length === 0) {
       return res.status(404).json({ error: "Film non trovato" });
     }
 
-    // ✅ Inserimento recensione
     const [result] = await db.query(
       `INSERT INTO reviews (movie_id, name, vote, text)
        VALUES (?, ?, ?, ?)`,
@@ -51,6 +47,7 @@ router.post("/:id/reviews", async (req, res) => {
   }
 });
 
-
+// ✅ Inserimento di un nuovo film (con immagine)
+router.post("/", upload.single("image"), createMovie);
 
 export default router;

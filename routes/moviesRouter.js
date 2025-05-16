@@ -1,6 +1,12 @@
 // routes/moviesRouter.js
 import express from "express";
-import { index, show, featured, createMovie } from "../controllers/moviesController.js";
+import {
+  index,
+  show,
+  featured,
+  createMovie,
+  showBySlug,
+} from "../controllers/moviesController.js";
 import upload from "../middlewares/upload.js";
 import { db } from "../db/index.js";
 
@@ -9,11 +15,17 @@ const router = express.Router();
 // ✅ Film in evidenza
 router.get("/featured", featured);
 
+// ✅ Film per slug (SEO-friendly)
+router.get("/slug/:slug", showBySlug);
+
 // ✅ Lista completa dei film
 router.get("/", index);
 
 // ✅ Dettaglio singolo film con recensioni
 router.get("/:id", show);
+
+// ✅ Inserimento di un nuovo film (con immagine)
+router.post("/", upload.single("image"), createMovie);
 
 // ✅ Aggiunta recensione per un film
 router.post("/:id/reviews", async (req, res) => {
@@ -46,8 +58,5 @@ router.post("/:id/reviews", async (req, res) => {
     res.status(500).json({ error: "Errore interno del server" });
   }
 });
-
-// ✅ Inserimento di un nuovo film (con immagine)
-router.post("/", upload.single("image"), createMovie);
 
 export default router;
